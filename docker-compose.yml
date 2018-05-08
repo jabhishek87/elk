@@ -1,0 +1,40 @@
+version: '2' 
+services:
+  elasticsearch:
+    image: elasticsearch
+    hostname: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  kibana:
+    image: kibana
+    hostname: kibana
+    ports:
+      - "5601:5601"
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+  logstash:
+    image: logstash
+    hostname: logstash
+    links:
+      - elasticsearch
+    volumes:
+      - ./nginx/log:/tmp/nginx
+      - ./logstash/conf/:/config-dir
+    command: logstash -f /config-dir/logstash.conf
+    depends_on:
+      - elasticsearch
+  nginx:
+    build: nginx/
+    image: abhishekk/nginx
+    container_name: aedb_base
+    image: abhishekk/nginx
+    hostname: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/log:/var/log/nginx
+    depends_on:
+      - elasticsearch
